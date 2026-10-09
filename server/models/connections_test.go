@@ -99,3 +99,60 @@ func TestValidSettings( t *testing.T ) {
 	if ValidSettings( map[string]any{ "highlight_box": true } ) { t.Fatal( "unknown setting accepted" ) }
 	if ValidSettings( map[string]any{ "dark_mode": 1.0 } ) { t.Fatal( "non-bool accepted" ) }
 }
+
+func TestDeleteUserRemovesEverything( t *testing.T ) {
+	store := openTestStore( t )
+	admin , _ := CreateUser( store , "Ada" , RoleAdmin )
+	player , _ := CreateUser( store , "Grace" , RoleUser )
+
+	CreateSession( store , player.ID , time.Hour )
+	CreateSession( store , admin.ID , time.Hour )
+	IssueLoginToken( store , player.ID , time.Hour )
+	IssueAPIKey( store , player.ID , "bot" , RoleUser , time.Hour )
+	SaveSettings( store , player.ID , map[string]any{ "dark_mode": true } )
+	AddResults( store , player.ID , []Result{ solvedResult( "2026-10-09" ) } )
+	MergeRandomDeck( store , player.ID , &RandomDeck{ Seen: []string{ "2024-01-01" } } )
+
+	if err := DeleteUser( store , player.ID ); err != nil { t.Fatal( err ) }
+	if _ , err := GetUser( store , player.ID ); err == nil { t.Fatal( "the user is still there" ) }
+	results , _ := GetResults( store , player.ID )
+	settings , _ := GetSettings( store , player.ID )
+	deck , _ := GetRandomDeck( store , player.ID )
+	keys , _ := ListAPIKeysForUser( store , player.ID )
+	if len( results ) != 0 || settings != nil || len( deck.Seen ) != 0 || len( keys ) != 0 {
+		t.Fatalf( "data left behind: results %d settings %v deck %v keys %d" , len( results ) , settings , deck , len( keys ) )
+	}
+	owned := 0
+	for _ , bucket := range []string{ db.BucketSessions , db.BucketLoginTokens } {
+		store.ForEach( bucket , func() any { return &struct{ UserID uint64 `json:"user_id"` }{} } , func( key []byte , item any ) bool {
+			if item.( *struct{ UserID uint64 `json:"user_id"` } ).UserID == player.ID { owned += 1 }
+			return true
+		} )
+	}
+	if owned != 0 { t.Fatalf( "%d sessions or login links left behind" , owned ) }
+
+	// The admin's own session is untouched.
+	sessions := 0
+	store.ForEach( db.BucketSessions , func() any { return &Session{} } , func( key []byte , item any ) bool {
+		sessions += 1
+		return true
+	} )
+	if sessions != 1 { t.Fatalf( "%d sessions remain; want the admin's one" , sessions ) }
+
+	if err := DeleteUser( store , player.ID ); err != ErrUserNotFound { t.Fatalf( "second delete: %v" , err ) }
+}
+
+func TestDeleteUserKeepsAnAdmin( t *testing.T ) {
+	store := openTestStore( t )
+	first , _ := CreateUser( store , "Ada" , RoleAdmin )
+	second , _ := CreateUser( store , "Grace" , RoleAdmin )
+
+	if err := DeleteUser( store , second.ID ); err != nil { t.Fatalf( "deleting one of two admins: %v" , err ) }
+	if err := DeleteUser( store , first.ID ); err != ErrLastAdmin { t.Fatalf( "deleting the last admin: %v" , err ) }
+
+	// A disabled admin doesn't count as someone left to run the app.
+	third , _ := CreateUser( store , "Linus" , RoleAdmin )
+	SetUserDisabled( store , third.ID , true )
+	if err := DeleteUser( store , first.ID ); err != ErrLastAdmin { t.Fatalf( "with only a disabled admin left: %v" , err ) }
+	if err := DeleteUser( store , third.ID ); err != nil { t.Fatalf( "deleting a disabled admin: %v" , err ) }
+}

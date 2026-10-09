@@ -1,6 +1,7 @@
 package routes
 
 import (
+	errors "errors"
 	strconv "strconv"
 
 	fiber "github.com/gofiber/fiber/v3"
@@ -199,5 +200,43 @@ func ( handlers *Handlers ) SetUserFeatures( c fiber.Ctx ) ( err error ) {
 	}
 	user , _ := models.GetUser( handlers.Store , user_id )
 	err = c.JSON( fiber.Map{ "ok": true , "features": user.Features() } )
+	return
+}
+
+// DeleteUser removes an account and all of its data for good. An admin
+// cannot delete themselves -- the same guard rail as disabling -- and the
+// model refuses to remove the last active admin.
+func ( handlers *Handlers ) DeleteUser( c fiber.Ctx ) ( err error ) {
+	var body csrfOnlyRequest
+	if c.Bind().Body( &body ) != nil {
+		err = badRequest( c , "malformed request body" )
+		return
+	}
+	if handlers.Guard.CheckCSRF( c , body.CSRFToken ) == false {
+		err = forbidden( c , "invalid csrf token" )
+		return
+	}
+
+	user_id , parse_err := strconv.ParseUint( c.Params( "user_id" ) , 10 , 64 )
+	if parse_err != nil {
+		err = badRequest( c , "invalid user id" )
+		return
+	}
+	if user_id == security.UserFrom( c ).ID {
+		err = badRequest( c , "you cannot delete your own account" )
+		return
+	}
+
+	delete_err := models.DeleteUser( handlers.Store , user_id )
+	switch {
+	case errors.Is( delete_err , models.ErrUserNotFound ):
+		err = notFound( c , "no such user" )
+	case errors.Is( delete_err , models.ErrLastAdmin ):
+		err = badRequest( c , "cannot delete the last active admin" )
+	case delete_err != nil:
+		err = serverError( c )
+	default:
+		err = c.JSON( fiber.Map{ "ok": true } )
+	}
 	return
 }

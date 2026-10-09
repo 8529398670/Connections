@@ -156,6 +156,24 @@ const App = {
         } },
       } );
 
+      // Deleting is for good -- the account, its sign-ins, and every game and
+      // result -- so it asks first. There is no button on your own row: the
+      // server refuses that, and so does common sense.
+      const isMe = App.currentUser !== null && App.currentUser.id === user.id;
+      const deleteButton = isMe ? null : Dom.el( "button" , {
+        class: "small danger-outline",
+        text: I18n.get( "admin.delete_button" ),
+        attrs: { type: "button" },
+        on: { click: async function () {
+          const question = I18n.format( "admin.delete_confirm" , { name: user.display_name } );
+          if ( question !== "" && !window.confirm( question ) ) return;
+          try {
+            await Api.deleteUser( user.id );
+            await App.refreshUsers();
+          } catch ( error ) { App.showError( error.message ); }
+        } },
+      } );
+
       // Game features this player can use. Switched off, the game page does
       // not draw them at all; the player sees it on their next page load.
       const features = user.features || {};
@@ -195,7 +213,7 @@ const App = {
           ] } ),
         ] } ),
         Dom.el( "td" , { children: [
-          Dom.el( "div" , { class: "row-actions" , children: [ historyLink , reissueButton , toggleButton ] } ),
+          Dom.el( "div" , { class: "row-actions" , children: [ historyLink , reissueButton , toggleButton , deleteButton ].filter( Boolean ) } ),
         ] } ),
       ] } ) );
     } );

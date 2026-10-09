@@ -104,6 +104,7 @@ func ( handlers *Handlers ) Register( app *fiber.App ) {
 	admin.Post( "/users/:user_id/reissue-login" , handlers.ReissueLogin )
 	admin.Post( "/users/:user_id/disabled" , handlers.SetUserDisabled )
 	admin.Post( "/users/:user_id/features" , handlers.SetUserFeatures )
+	admin.Post( "/users/:user_id/delete" , handlers.DeleteUser )
 	// A player's finished games, for the admin's history page.
 	admin.Get( "/users/:user_id/results" , handlers.GetUserResults )
 

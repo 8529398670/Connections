@@ -68,6 +68,7 @@ const Api = {
   createUser( name , role )    { return this.post( "/api/admin/users" , { display_name: name , role: role } ); },
   reissueLogin( userId )       { return this.post( "/api/admin/users/" + userId + "/reissue-login" ); },
   setDisabled( userId , flag ) { return this.post( "/api/admin/users/" + userId + "/disabled" , { disabled: flag } ); },
+  deleteUser( userId )         { return this.post( "/api/admin/users/" + userId + "/delete" ); },
   // change: { hints: bool }
   setFeatures( userId , change ) { return this.post( "/api/admin/users/" + userId + "/features" , change ); },
 

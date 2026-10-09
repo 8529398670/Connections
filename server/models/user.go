@@ -5,8 +5,11 @@
 package models
 
 import (
+	errors "errors"
 	strings "strings"
 	time "time"
+
+	bolt "go.etcd.io/bbolt"
 
 	db "connections/server/db"
 	encryption "connections/server/encryption"
@@ -144,6 +147,81 @@ func SetUserFeatures( store *db.Store , user_id uint64 , hints *bool ) ( err err
 			if hints != nil { user.HintsOff = *hints == false }
 			return
 		} )
+	return
+}
+
+var (
+	ErrUserNotFound = errors.New( "no such user" )
+	ErrLastAdmin    = errors.New( "cannot delete the last active admin" )
+)
+
+// DeleteUser removes an account and everything that belongs to it: its
+// sessions (so any browser still holding the cookie is signed out on its next
+// request), unused login links, API keys, and its games, results, settings
+// and random deck.
+//
+// It is one transaction, for the same reason as DestroyAllSessionsForUser: a
+// session or key created mid-delete must not outlive the account. The last
+// active admin is refused inside that same transaction -- checked anywhere
+// else, two admins deleting each other at once could both pass the check and
+// leave nobody able to administer the app.
+//
+// User ids come from a bolt sequence and are never reused, so nothing stored
+// elsewhere under this id (a browser's local copy, an old cookie) can ever be
+// mistaken for a later account.
+func DeleteUser( store *db.Store , user_id uint64 ) ( err error ) {
+	key := encryption.Uint64ToBytes( user_id )
+	err = store.Update( func( tx *bolt.Tx ) ( tx_err error ) {
+		users := tx.Bucket( []byte( db.BucketUsers ) )
+		raw := users.Get( key )
+		if raw == nil {
+			tx_err = ErrUserNotFound
+			return
+		}
+		target := &User{}
+		if tx_err = store.DecodeValue( raw , target ); tx_err != nil { return }
+
+		if target.IsAdmin() && target.Disabled() == false {
+			others := 0
+			cursor := users.Cursor()
+			for other_key , value := cursor.First(); other_key != nil; other_key , value = cursor.Next() {
+				other := &User{}
+				if tx_err = store.DecodeValue( value , other ); tx_err != nil { return }
+				if other.ID != user_id && other.IsAdmin() && other.Disabled() == false { others += 1 }
+			}
+			if others == 0 {
+				tx_err = ErrLastAdmin
+				return
+			}
+		}
+
+		if tx_err = users.Delete( key ); tx_err != nil { return }
+		for _ , name := range []string{ db.BucketSettings , db.BucketGames , db.BucketResults , db.BucketRandom } {
+			if tx_err = tx.Bucket( []byte( name ) ).Delete( key ); tx_err != nil { return }
+		}
+		for _ , name := range []string{ db.BucketSessions , db.BucketLoginTokens , db.BucketAPIKeys } {
+			if tx_err = deleteOwnedBy( store , tx.Bucket( []byte( name ) ) , user_id ); tx_err != nil { return }
+		}
+		return
+	} )
+	return
+}
+
+// deleteOwnedBy drops every row in a bucket whose user_id is this user.
+// Sessions, login tokens and API keys all store their owner under that name.
+func deleteOwnedBy( store *db.Store , bucket *bolt.Bucket , user_id uint64 ) ( err error ) {
+	doomed := [][]byte{}
+	cursor := bucket.Cursor()
+	for key , value := cursor.First(); key != nil; key , value = cursor.Next() {
+		owner := struct {
+			UserID uint64 `json:"user_id"`
+		}{}
+		if err = store.DecodeValue( value , &owner ); err != nil { return }
+		if owner.UserID == user_id { doomed = append( doomed , append( []byte( nil ) , key... ) ) }
+	}
+	for _ , key := range doomed {
+		if err = bucket.Delete( key ); err != nil { return }
+	}
 	return
 }
 

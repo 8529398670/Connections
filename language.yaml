@@ -58,6 +58,9 @@ admin:
   reissue_button: "New link"
   disable_button: "Disable"
   enable_button: "Enable"
+  delete_button: "Delete"
+  # {name} is the account being deleted. Empty this to stop asking first.
+  delete_confirm: "Delete {name}? Their account, sign-ins, games and stats are removed for good. This can't be undone."
   history_button: "History"
   table_features: "Features"
   feature_hints: "Hints: {state}"

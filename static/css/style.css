@@ -159,6 +159,14 @@ button.small {
   font-size: 0.85rem;
 }
 
+/* For an action that cannot be undone (deleting an account). Outlined rather
+   than filled, so it does not shout louder than the row's everyday buttons. */
+button.danger-outline {
+  color: var(--error-fg);
+  background: transparent;
+  border-color: var(--error-fg);
+}
+
 .notice {
   padding: 0.6rem 0.75rem;
   border-radius: 8px;
@@ -276,6 +284,14 @@ a.button.small {
   min-height: 36px;
   padding: 0.35rem 0.6rem;
   font-size: 0.85rem;
+}
+
+/* For an action that cannot be undone (deleting an account). Outlined rather
+   than filled, so it does not shout louder than the row's everyday buttons. */
+button.danger-outline {
+  color: var(--error-fg);
+  background: transparent;
+  border-color: var(--error-fg);
 }
 
 /* The play history page (history.html). Its table is wide, so the page is
