@@ -1,0 +1,294 @@
+# Every piece of text the UI can show lives here, and nowhere else.
+#
+# Two rules make this useful rather than just indirection:
+#
+#   1. Translating or rewording the app is an edit to this file plus a
+#      restart. No HTML or JS changes, no rebuild.
+#   2. A key that is missing or empty ("") hides its element entirely. That
+#      is how you turn a label, a button, or a whole section off without
+#      touching the markup -- set it to "" and it disappears rather than
+#      rendering blank or showing a raw key name.
+#
+# This file is served to any visitor at /api/language, signed in or not, since
+# the signed-out page needs text too. Never put anything secret in it.
+
+app:
+  title: "Connections"
+  tagline: "Sign in with a one-time link to keep your games and stats on every device."
+
+account_page:
+  title: "Connections · Account"
+
+nav:
+  sign_in: "Sign in"
+  account_signed_in: "Account: {name}"
+  back_to_game: "← Back to the game"
+
+signed_out:
+  heading: "You are not signed in"
+  body: "You can still play -- your games and stats stay in this browser. There is no signup form on purpose: ask an admin for a one-time login link to keep them on every device."
+  invalid_link: "That login link is invalid, expired, or has already been used. Ask for a new one."
+
+account:
+  heading: "Account"
+  display_name_label: "Display name"
+  display_name_placeholder: "Your name"
+  save_button: "Save"
+  saved_notice: "Saved."
+  logout_button: "Log out"
+
+admin:
+  heading: "Admin"
+  description: "Create an account by minting a login link. Send the link to the person; it works once."
+  new_name_label: "Name"
+  new_name_placeholder: "Their name"
+  new_role_label: "Role"
+  role_user: "user"
+  role_admin: "admin"
+  create_button: "Create login link"
+  link_notice: "Send this one-time link. It is shown once and cannot be recovered."
+  copy_button: "Copy"
+  copied_notice: "Copied."
+  table_name: "Name"
+  table_role: "Role"
+  table_status: "Status"
+  table_actions: "Actions"
+  status_active: "active"
+  status_disabled: "disabled"
+  reissue_button: "New link"
+  disable_button: "Disable"
+  enable_button: "Enable"
+  history_button: "History"
+  table_features: "Features"
+  feature_hints: "Hints: {state}"
+  feature_on: "on"
+  feature_off: "off"
+  feature_turn_off: "Click to hide this from the player"
+  feature_turn_on: "Click to give this back to the player"
+
+api_keys:
+  heading: "API keys"
+  description: "For scripts, cron jobs, and other services. A key does exactly what your account can do -- send it as an Authorization: Bearer header. It is shown once."
+  name_label: "What is it for"
+  name_placeholder: "deploy bot"
+  role_label: "Permission"
+  role_user: "user"
+  role_admin: "admin (can manage accounts)"
+  days_label: "Expires in (days)"
+  days_placeholder: "leave blank for the default, 0 for never"
+  create_button: "Create key"
+  secret_notice: "Copy this now. It is shown once and cannot be recovered -- if you lose it, revoke the key and create another."
+  copy_button: "Copy"
+  copied_notice: "Copied."
+  table_name: "Name"
+  table_role: "Permission"
+  table_status: "Status"
+  table_last_used: "Last used"
+  table_expires: "Expires"
+  table_actions: "Actions"
+  status_active: "active"
+  status_revoked: "revoked"
+  status_expired: "expired"
+  never: "never"
+  revoke_button: "Revoke"
+  # Empty this string to stop asking for confirmation before revoking.
+  revoke_confirm: "Revoke this key? Anything using it stops working immediately."
+
+admin_keys:
+  heading: "All API keys"
+  description: "Every key in this app and who owns it. Revoke one to cut off whatever is using it, right away."
+  table_owner: "Owner"
+
+errors:
+  generic: "Something went wrong. Please try again."
+  network: "Could not reach the server."
+
+# ---------------------------------------------------------------------------
+# The game page. {placeholders} are filled in by I18n.format.
+# ---------------------------------------------------------------------------
+
+game:
+  title: "Connections"
+  instructions: "Create four groups of four!"
+  # The line under the header: weekday, date, and the puzzle's number.
+  label: "{date} · #{id}"
+  kind_random: "Random"
+  board_label: "Word tiles"
+  mistakes_remaining: "Mistakes Remaining:"
+  shuffle: "Shuffle"
+  deselect_all: "Deselect All"
+  submit: "Submit"
+  view_results: "View Results"
+  play_again: "Play Again"
+  one_away: "One away…"
+  already_guessed: "Already guessed!"
+  loading: "Loading puzzle…"
+  load_failed: "Could not load that puzzle. Please try again."
+  puzzles_failed: "Could not load the puzzle list."
+  no_puzzle: "There's no puzzle for {date}."
+  bad_link: "That link isn't a puzzle this site can open."
+  hint_label: "Hint:"
+  hint_none: "No hints left -- every remaining group is already shown."
+  practice_notice: "Replaying -- your first result for this puzzle stays in your stats."
+  result_copied: "Result copied to the clipboard."
+  link_copied: "Link copied."
+  timer_label: "Time"
+  # The four colours, easiest to trickiest.
+  level_0: "Yellow"
+  level_1: "Green"
+  level_2: "Blue"
+  level_3: "Purple"
+
+menu:
+  more: "More options"
+  random: "Random puzzle"
+  archive: "Archive"
+  hint: "Hint"
+  today: "Today's puzzle"
+  reset_puzzle: "Reset puzzle"
+  share: "Share"
+  help: "How to play"
+  stats: "Statistics"
+  settings: "Settings"
+  confirm_cancel: "Cancel"
+  confirm_reset: "Start this puzzle over? Your guesses and mistakes will be cleared. A puzzle you already finished keeps its first result in your stats."
+  reset_yes: "Start over"
+
+archive:
+  heading: "Connections archive"
+  # {first} is the date of the first puzzle.
+  subheading: "Play every puzzle since {first}."
+  month: "Month"
+  year: "Year"
+  previous: "Previous month"
+  next: "Next month"
+  # Sunday first, as single letters.
+  weekdays: "S,M,T,W,T,F,S"
+  today: "Today"
+  random: "Random"
+  close: "Close"
+  # Read out for each day by screen readers.
+  day_label: "{date}: {state}"
+  state_solved: "solved"
+  state_perfect: "solved with no mistakes"
+  state_failed: "not solved"
+  state_playing: "in progress"
+  state_unplayed: "not played"
+  state_none: "no puzzle"
+  legend_perfect: "Perfect"
+  legend_solved: "Solved"
+  legend_failed: "Missed"
+  legend_playing: "In progress"
+
+settings:
+  heading: "Settings"
+  gameboard: "Gameboard settings"
+  appearance: "Appearance"
+  show_timer: "Show timer"
+  sound_on_solve: "Play sound on solve"
+  dark_mode: "Dark mode"
+  close: "Done"
+
+help:
+  heading: "How to Play"
+  intro: "Find four groups of four words that share something in common."
+  rule_select: "Pick four words and press Submit to check your guess."
+  rule_mistakes: "You can make up to four mistakes. Three right and one wrong earns a “One away…”"
+  examples_heading: "Category examples"
+  example_1: "WET WEATHER: Hail, Rain, Sleet, Snow"
+  example_2: "SKY___: Dive, Lark, Rocket, Scraper"
+  specific: "Categories are always more specific than “words with five letters” or “verbs.”"
+  one_solution: "Every puzzle has exactly one solution, so watch for words that seem to fit more than one group."
+  colors: "Each group has a colour, shown once it is solved:"
+  easy: "Straightforward"
+  tricky: "Tricky"
+  # Shown only to players who can use hints.
+  hints: "Stuck? The lightbulb names the easiest group you haven't found yet. Hints are counted on your result."
+  tips_heading: "Tips"
+  tip_1: "Start with words that can only mean one thing -- they narrow the field fastest."
+  tip_2: "Before you submit, look for a fifth word that would also fit. That's usually a red herring."
+  tip_3: "When one category has lots of candidates, solve a tighter one first and come back."
+  tip_4: "After “One away…”, think about where each of the four words could go instead."
+  archive: "Tap “Connections” at the top (or the calendar) for the archive: every puzzle since June 2023. The dice deal one you haven't played yet."
+  sync: "Your games are saved as you play. Sign in to pick them up on another device."
+  keyboard: "On a keyboard, Enter submits and Esc deselects."
+  close: "Got it"
+
+stats:
+  heading: "Statistics"
+  completed: "Completed"
+  win_percent: "Win %"
+  current_streak: "Current Streak"
+  max_streak: "Max Streak"
+  perfect: "Perfect Puzzles"
+  purple_first: "Purple First"
+  empty_value: "--"
+  percent: "{value}"
+  streak_note: "A streak counts each day's puzzle solved on its own day."
+  distribution: "Mistake distribution"
+  distribution_label: "{count} games with {mistakes} mistakes"
+  signed_out_note: "These stats live in this browser. Sign in to keep them on every device."
+  close: "Close"
+
+# The card shown when a puzzle ends, and from View Results.
+result:
+  # By number of mistakes; failed is a loss.
+  title_0: "Perfect!"
+  title_1: "Great!"
+  title_2: "Solid!"
+  title_3: "Phew!"
+  title_failed: "Next Time!"
+  subtitle: "Connections #{id} · {date}"
+  skill: "Skill"
+  out_of: "out of 99"
+  details: "Mistakes: {mistakes} · Hints: {hints} · Time: {time}"
+  # For a player whose hints an admin has switched off.
+  details_no_hints: "Mistakes: {mistakes} · Time: {time}"
+  practice: "Practice round -- your first result for this puzzle stays in your stats."
+  share: "Share Your Result"
+  stats: "Statistics"
+  random: "Random puzzle"
+  close: "Close"
+  breakdown: "How the skill score works"
+  # The skill score's base, by how the game ended.
+  base_win_0: "Won with no mistakes"
+  base_win_1: "Won with one mistake"
+  base_win_2: "Won with two mistakes"
+  base_win_3: "Won with three mistakes"
+  base_lose_0: "Lost, no groups found"
+  base_lose_1: "Lost, one group found"
+  base_lose_2: "Lost, two groups found"
+  # Bonus points for a win, the best one only.
+  bonus_reverse_rainbow: "Reverse rainbow"
+  bonus_purple_blue: "Purple and blue first two"
+  bonus_purple_first: "Purple found first"
+  bonus_blue_first: "Blue found first"
+  points: "{points}"
+  bonus_points: "+{points}"
+  # The text Share copies. {grid} is one line of squares per guess.
+  share_text: "Connections\nPuzzle #{id}\n{grid}"
+
+# ---------------------------------------------------------------------------
+# The admin's history page (history.html): one player's finished games.
+history:
+  title: "Play history"
+  back: "← Admin"
+  description: "Every puzzle this player has finished while signed in, first attempt only. Times are in your local time."
+  totals: "Games: {games} · Won: {wins} · Perfect: {perfect}"
+  none_games: "No finished games yet."
+  load_failed: "Could not load this player's history."
+  not_admin: "Only an admin can see this page."
+  col_date: "Puzzle"
+  col_finished: "Finished"
+  col_kind: "How"
+  col_outcome: "Outcome"
+  col_mistakes: "Mistakes"
+  col_hints: "Hints"
+  col_time: "Time"
+  col_skill: "Skill"
+  col_guesses: "Guesses"
+  outcome_solved: "Solved"
+  outcome_failed: "Missed"
+  kind_calendar: "Calendar"
+  kind_random: "Random"
+  puzzle_label: "#{id} · {date}"

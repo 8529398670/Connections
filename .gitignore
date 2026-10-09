@@ -1,0 +1,9 @@
+# Build output from build.sh
+dist/
+
+# Runtime state. dockerRun.sh keeps the container's state in ./data and its
+# key in ./.secret_key; neither belongs in version control.
+data/
+.secret_key
+*.db
+.env

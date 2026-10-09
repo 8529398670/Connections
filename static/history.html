@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title data-i18n="history.title">&nbsp;</title>
+  <script src="/js/theme.js"></script>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="history-page">
+  <!--
+    One player's finished puzzles, for an admin (history-page.js). The data
+    comes from /api/admin/users/:id/results, which refuses anyone else.
+  -->
+  <header class="app-header">
+    <div>
+      <a class="back-link" href="/account.html" data-i18n="history.back"></a>
+      <h1 id="history-heading" data-i18n="history.title"></h1>
+      <p class="muted" data-i18n="history.description"></p>
+    </div>
+  </header>
+
+  <main hidden id="main">
+    <section class="card">
+      <h2 id="player-name"></h2>
+      <p id="history-totals" class="muted history-totals"></p>
+      <div class="table-scroll">
+        <table id="games-table">
+          <thead>
+            <tr>
+              <th data-i18n="history.col_date"></th>
+              <th data-i18n="history.col_finished"></th>
+              <th data-i18n="history.col_kind"></th>
+              <th data-i18n="history.col_outcome"></th>
+              <th data-i18n="history.col_mistakes"></th>
+              <th data-i18n="history.col_hints"></th>
+              <th data-i18n="history.col_time"></th>
+              <th data-i18n="history.col_skill"></th>
+              <th data-i18n="history.col_guesses"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p id="no-games" class="muted" data-i18n="history.none_games" hidden></p>
+    </section>
+
+    <p id="error-banner" class="notice notice-error" hidden></p>
+  </main>
+
+  <script src="/js/dom.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/dates.js"></script>
+  <script src="/js/score.js"></script>
+  <script src="/js/history-page.js"></script>
+</body>
+</html>

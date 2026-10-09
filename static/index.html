@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <title data-i18n="app.title">&nbsp;</title>
+  <!-- Before the stylesheets, so a dark-mode player never sees a light flash. -->
+  <script src="/js/theme.js"></script>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/game.css" />
+</head>
+<body class="game-page">
+  <!--
+    The game. No text is hardcoded: every label carries a data-i18n key
+    resolved from language.yaml, and the tiles, bars, calendar, settings
+    list, and stats are built by the scripts at the bottom using the same
+    file. Icons are inline SVG, labelled for screen readers through
+    data-i18n-attr. Buttons with data-action are wired by menu.js to
+    Play.action.
+  -->
+  <p id="error-banner" class="notice notice-error" hidden></p>
+
+  <div id="app" class="game-app" hidden>
+    <header class="game-header">
+      <button id="title-button" class="title-button" type="button" data-action="archive" data-i18n-attr="aria-label:menu.archive,title:menu.archive">
+        <span class="title-text" data-i18n="game.title"></span>
+        <svg class="icon icon-small" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+      </button>
+
+      <nav class="header-actions">
+        <button class="icon-button" type="button" data-action="random" data-i18n-attr="aria-label:menu.random,title:menu.random">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="3" /><circle class="dot" cx="8.5" cy="8.5" r="1.4" /><circle class="dot" cx="15.5" cy="8.5" r="1.4" /><circle class="dot" cx="12" cy="12" r="1.4" /><circle class="dot" cx="8.5" cy="15.5" r="1.4" /><circle class="dot" cx="15.5" cy="15.5" r="1.4" /></svg>
+        </button>
+        <button class="icon-button wide-only" type="button" data-action="archive" data-i18n-attr="aria-label:menu.archive,title:menu.archive">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M3.5 10h17M8 3v4M16 3v4" /></svg>
+        </button>
+        <button class="icon-button" type="button" data-action="hint" data-i18n-attr="aria-label:menu.hint,title:menu.hint">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2v.5h5V16c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z" /></svg>
+        </button>
+        <button class="icon-button wide-only" type="button" data-action="help" data-i18n-attr="aria-label:menu.help,title:menu.help">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" /><path d="M9.3 9.2a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.4-2.7 4" /><path d="M12 17.4v.1" /></svg>
+        </button>
+        <button class="icon-button" type="button" data-action="stats" data-i18n-attr="aria-label:menu.stats,title:menu.stats">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-8M12 20V5M19 20v-5" /></svg>
+        </button>
+        <button class="icon-button wide-only" type="button" data-action="settings" data-i18n-attr="aria-label:menu.settings,title:menu.settings">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1" /><circle cx="15" cy="7" r="2" /><circle cx="9" cy="12" r="2" /><circle cx="17" cy="17" r="2" /></svg>
+        </button>
+        <div class="menu-wrap">
+          <button id="more-button" class="icon-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="more-menu"
+                  data-i18n-attr="aria-label:menu.more,title:menu.more">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle class="dot" cx="5" cy="12" r="1.6" /><circle class="dot" cx="12" cy="12" r="1.6" /><circle class="dot" cx="19" cy="12" r="1.6" /></svg>
+          </button>
+          <div id="more-menu" class="menu" role="menu" hidden>
+            <button type="button" role="menuitem" data-action="today" data-i18n="menu.today"></button>
+            <button type="button" role="menuitem" data-action="random" data-i18n="menu.random"></button>
+            <button type="button" role="menuitem" data-action="archive" data-i18n="menu.archive"></button>
+            <hr />
+            <button type="button" role="menuitem" data-action="hint" data-i18n="menu.hint"></button>
+            <button type="button" role="menuitem" data-action="reset" data-i18n="menu.reset_puzzle"></button>
+            <button type="button" role="menuitem" data-action="share" data-i18n="menu.share"></button>
+            <hr />
+            <button type="button" role="menuitem" data-action="help" data-i18n="menu.help"></button>
+            <button type="button" role="menuitem" data-action="stats" data-i18n="menu.stats"></button>
+            <button type="button" role="menuitem" data-action="settings" data-i18n="menu.settings"></button>
+          </div>
+        </div>
+        <a id="account-link" class="icon-button" href="/account.html">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" /></svg>
+        </a>
+      </nav>
+    </header>
+
+    <div class="status-bar">
+      <span id="game-label" class="game-label"></span>
+      <span id="random-badge" class="kind-badge" data-i18n="game.kind_random" hidden></span>
+      <span id="timer" class="timer" data-i18n-attr="aria-label:game.timer_label,title:game.timer_label" hidden>
+        <span id="timer-value" class="timer-value"></span>
+      </span>
+    </div>
+
+    <main class="game-layout">
+      <p class="instructions" data-i18n="game.instructions"></p>
+      <div id="hint-line" class="hint-line" aria-live="polite" hidden>
+        <span class="hint-label" data-i18n="game.hint_label"></span>
+        <ul id="hint-list" class="hint-list"></ul>
+      </div>
+
+      <div class="board-wrap">
+        <div id="bars" class="bars" aria-live="polite"></div>
+        <div id="board" class="board" role="group"></div>
+        <div id="loading-overlay" class="board-overlay" hidden>
+          <span class="spinner" aria-hidden="true"></span>
+          <p data-i18n="game.loading"></p>
+        </div>
+      </div>
+
+      <div id="mistakes-row" class="mistakes-row">
+        <span data-i18n="game.mistakes_remaining"></span>
+        <span id="mistake-dots" class="mistake-dots"></span>
+      </div>
+
+      <div id="play-actions" class="pill-row">
+        <button id="shuffle-button" type="button" class="pill" data-i18n="game.shuffle"></button>
+        <button id="deselect-button" type="button" class="pill" data-i18n="game.deselect_all"></button>
+        <button id="submit-button" type="button" class="pill pill-strong" data-i18n="game.submit"></button>
+      </div>
+      <div id="done-actions" class="pill-row" hidden>
+        <button id="results-button" type="button" class="pill pill-strong" data-i18n="game.view_results"></button>
+        <button id="again-button" type="button" class="pill" data-i18n="game.play_again"></button>
+      </div>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </div>
+
+  <dialog id="archive-dialog" class="sheet archive-sheet" aria-labelledby="archive-heading">
+    <h2 id="archive-heading" class="dialog-title" data-i18n="archive.heading"></h2>
+    <p id="archive-subheading" class="muted archive-subheading"></p>
+    <div class="archive-nav">
+      <button id="archive-prev" class="nav-arrow" type="button" data-i18n-attr="aria-label:archive.previous,title:archive.previous">
+        <svg class="icon icon-small" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+      </button>
+      <label class="archive-select">
+        <span data-i18n="archive.month"></span>
+        <select id="archive-month"></select>
+      </label>
+      <label class="archive-select">
+        <span data-i18n="archive.year"></span>
+        <select id="archive-year"></select>
+      </label>
+      <button id="archive-next" class="nav-arrow" type="button" data-i18n-attr="aria-label:archive.next,title:archive.next">
+        <svg class="icon icon-small" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+      </button>
+    </div>
+    <div id="archive-weekdays" class="archive-weekdays" aria-hidden="true"></div>
+    <div id="archive-grid" class="archive-grid"></div>
+    <ul class="archive-legend">
+      <li><span class="legend-box state-perfect"></span><span data-i18n="archive.legend_perfect"></span></li>
+      <li><span class="legend-box state-solved"></span><span data-i18n="archive.legend_solved"></span></li>
+      <li><span class="legend-box state-failed"></span><span data-i18n="archive.legend_failed"></span></li>
+      <li><span class="legend-box state-playing"></span><span data-i18n="archive.legend_playing"></span></li>
+    </ul>
+    <div class="dialog-actions">
+      <button id="archive-today" type="button" class="secondary" data-i18n="archive.today"></button>
+      <button id="archive-random" type="button" class="secondary" data-i18n="archive.random"></button>
+      <button type="button" data-close data-i18n="archive.close"></button>
+    </div>
+  </dialog>
+
+  <dialog id="settings-dialog" class="sheet" aria-labelledby="settings-heading">
+    <h2 id="settings-heading" class="dialog-title" data-i18n="settings.heading"></h2>
+    <h3 class="section-label" data-i18n="settings.gameboard"></h3>
+    <ul id="settings-list" class="settings-list"></ul>
+    <h3 class="section-label" data-i18n="settings.appearance"></h3>
+    <ul id="appearance-list" class="settings-list"></ul>
+    <div class="dialog-actions">
+      <button type="button" data-close data-i18n="settings.close"></button>
+    </div>
+  </dialog>
+
+  <dialog id="help-dialog" class="sheet" aria-labelledby="help-heading">
+    <h2 id="help-heading" class="dialog-title" data-i18n="help.heading"></h2>
+    <p class="help-intro" data-i18n="help.intro"></p>
+    <ul class="help-list">
+      <li data-i18n="help.rule_select"></li>
+      <li data-i18n="help.rule_mistakes"></li>
+    </ul>
+    <h3 class="section-label" data-i18n="help.examples_heading"></h3>
+    <ul class="help-list">
+      <li data-i18n="help.example_1"></li>
+      <li data-i18n="help.example_2"></li>
+    </ul>
+    <p data-i18n="help.specific"></p>
+    <p data-i18n="help.one_solution"></p>
+    <p data-i18n="help.colors"></p>
+    <ul id="help-legend" class="help-legend"></ul>
+    <p id="help-hints" data-i18n="help.hints"></p>
+    <h3 class="section-label" data-i18n="help.tips_heading"></h3>
+    <ul class="help-list">
+      <li data-i18n="help.tip_1"></li>
+      <li data-i18n="help.tip_2"></li>
+      <li data-i18n="help.tip_3"></li>
+      <li data-i18n="help.tip_4"></li>
+    </ul>
+    <p data-i18n="help.archive"></p>
+    <p data-i18n="help.sync"></p>
+    <p class="wide-only" data-i18n="help.keyboard"></p>
+    <div class="dialog-actions">
+      <button type="button" data-close data-i18n="help.close"></button>
+    </div>
+  </dialog>
+
+  <dialog id="stats-dialog" class="sheet" aria-labelledby="stats-heading">
+    <h2 id="stats-heading" class="dialog-title" data-i18n="stats.heading"></h2>
+    <dl id="stats-grid" class="stats-grid"></dl>
+    <p class="muted stats-note" data-i18n="stats.streak_note"></p>
+    <h3 class="section-label" data-i18n="stats.distribution"></h3>
+    <div id="stats-distribution" class="distribution"></div>
+    <p id="stats-signed-out" class="muted stats-note" data-i18n="stats.signed_out_note" hidden></p>
+    <div class="dialog-actions">
+      <button type="button" data-close data-i18n="stats.close"></button>
+    </div>
+  </dialog>
+
+  <dialog id="result-dialog" class="sheet result-sheet" aria-labelledby="result-heading">
+    <h2 id="result-heading" class="dialog-title"></h2>
+    <p id="result-subtitle" class="muted result-subtitle"></p>
+    <div class="result-body">
+      <div id="result-grid" class="result-grid"></div>
+      <div class="skill">
+        <p class="skill-score">
+          <span class="skill-label" data-i18n="result.skill"></span>
+          <span id="result-skill" class="skill-value"></span>
+          <span class="skill-out-of" data-i18n="result.out_of"></span>
+        </p>
+        <ul id="result-breakdown" class="skill-breakdown" data-i18n-attr="aria-label:result.breakdown"></ul>
+      </div>
+    </div>
+    <p id="result-details" class="muted result-details"></p>
+    <p id="result-practice" class="result-practice" data-i18n="result.practice" hidden></p>
+    <div class="dialog-actions result-actions">
+      <button id="result-share" type="button" class="share-button" data-i18n="result.share"></button>
+      <button id="result-stats" type="button" class="secondary" data-i18n="result.stats"></button>
+      <button id="result-random" type="button" class="secondary" data-i18n="result.random"></button>
+      <button type="button" class="secondary" data-close data-i18n="result.close"></button>
+    </div>
+  </dialog>
+
+  <dialog id="confirm-dialog" class="sheet" aria-labelledby="confirm-message">
+    <p id="confirm-message" class="confirm-message"></p>
+    <div class="dialog-actions">
+      <button id="confirm-no" type="button" class="secondary" data-i18n="menu.confirm_cancel"></button>
+      <button id="confirm-yes" type="button" class="danger"></button>
+    </div>
+  </dialog>
+
+  <!-- Plain scripts in dependency order, one global each. -->
+  <script src="/js/dom.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/dates.js"></script>
+  <script src="/js/puzzles.js"></script>
+  <script src="/js/sync.js"></script>
+  <script src="/js/links.js"></script>
+  <script src="/js/game.js"></script>
+  <script src="/js/score.js"></script>
+  <script src="/js/board.js"></script>
+  <script src="/js/settings.js"></script>
+  <script src="/js/stats.js"></script>
+  <script src="/js/sound.js"></script>
+  <script src="/js/menu.js"></script>
+  <script src="/js/archive.js"></script>
+  <script src="/js/random.js"></script>
+  <script src="/js/play.js"></script>
+</body>
+</html>
