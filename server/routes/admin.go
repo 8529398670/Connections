@@ -21,8 +21,10 @@ type csrfOnlyRequest struct {
 }
 
 type setFeaturesRequest struct {
-	Hints     *bool  `json:"hints"`
-	CSRFToken string `json:"csrf_token"`
+	Hints            *bool  `json:"hints"`
+	MissingHint      *int   `json:"missing_hint"`
+	UnlimitedGuesses *bool  `json:"unlimited_guesses"`
+	CSRFToken        string `json:"csrf_token"`
 }
 
 type setDisabledRequest struct {
@@ -169,7 +171,9 @@ func ( handlers *Handlers ) SetUserDisabled( c fiber.Ctx ) ( err error ) {
 	return
 }
 
-// SetUserFeatures switches Hints on or off for one player. Their game page reads the result from /api/me on its next load.
+// SetUserFeatures changes one player's game features: Hints, the "N missing"
+// alert level, and whether they may turn on Unlimited guessing. Their game
+// page reads the result from /api/me on its next load.
 func ( handlers *Handlers ) SetUserFeatures( c fiber.Ctx ) ( err error ) {
 	var body setFeaturesRequest
 	if c.Bind().Body( &body ) != nil {
@@ -180,8 +184,12 @@ func ( handlers *Handlers ) SetUserFeatures( c fiber.Ctx ) ( err error ) {
 		err = forbidden( c , "invalid csrf token" )
 		return
 	}
-	if body.Hints == nil {
+	if body.Hints == nil && body.MissingHint == nil && body.UnlimitedGuesses == nil {
 		err = badRequest( c , "nothing to change" )
+		return
+	}
+	if body.MissingHint != nil && ( *body.MissingHint < 0 || *body.MissingHint > models.MaxMissingHint ) {
+		err = badRequest( c , "missing_hint must be 0-3" )
 		return
 	}
 
@@ -194,7 +202,11 @@ func ( handlers *Handlers ) SetUserFeatures( c fiber.Ctx ) ( err error ) {
 		err = notFound( c , "no such user" )
 		return
 	}
-	if models.SetUserFeatures( handlers.Store , user_id , body.Hints ) != nil {
+	if models.SetUserFeatures( handlers.Store , user_id , models.FeatureChange{
+		Hints:            body.Hints,
+		MissingHint:      body.MissingHint,
+		UnlimitedGuesses: body.UnlimitedGuesses,
+	} ) != nil {
 		err = serverError( c )
 		return
 	}

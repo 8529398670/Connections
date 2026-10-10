@@ -5,7 +5,9 @@
 // The names must match the allow-list in server/models/connections_settings.go;
 // the server refuses any it does not know. Every setting is a switch.
 const Settings = {
-  GAMEBOARD: [ "show_timer" , "sound_on_solve" ],
+  // unlimited_guessing is only drawn for a player an admin has allowed it;
+  // play.js hides it otherwise.
+  GAMEBOARD: [ "show_timer" , "sound_on_solve" , "unlimited_guessing" ],
   APPEARANCE: [ "dark_mode" ],
 
   // Like the NYT game: no clock on screen, a chime on a win, light mode
@@ -14,6 +16,7 @@ const Settings = {
     show_timer: false,
     sound_on_solve: true,
     dark_mode: false,
+    unlimited_guessing: false,
   },
 
   values: {},

@@ -61,6 +61,23 @@ func TestValidResult( t *testing.T ) {
 		FinishedAt: time.Now().UnixMilli(),
 	}
 	if ValidResult( &failed ) == false { t.Fatal( "a good failed result was refused" ) }
+
+	// Six mistakes and then all four groups: only an unlimited game can do that.
+	unlimited := Result{
+		GameID: "2026-10-07" , PuzzleID: 3 , Kind: "calendar" , Outcome: "solved" , Mistakes: 6 , Unlimited: true ,
+		Guesses: [][]int{
+			{ 0 , 1 , 2 , 4 } , { 0 , 1 , 2 , 5 } , { 0 , 1 , 2 , 6 } , { 0 , 1 , 2 , 7 } , { 0 , 1 , 2 , 8 } , { 0 , 1 , 2 , 9 } ,
+			{ 0 , 1 , 2 , 3 } , { 4 , 5 , 6 , 7 } , { 8 , 9 , 10 , 11 } , { 12 , 13 , 14 , 15 },
+		},
+		FinishedAt: time.Now().UnixMilli(),
+	}
+	if ValidResult( &unlimited ) == false { t.Fatal( "a good unlimited result was refused" ) }
+	limited := unlimited
+	limited.Unlimited = false
+	if ValidResult( &limited ) { t.Error( "six mistakes accepted without unlimited" ) }
+	unlimitedFailed := failed
+	unlimitedFailed.Unlimited = true
+	if ValidResult( &unlimitedFailed ) { t.Error( "an unlimited game was accepted as failed" ) }
 }
 
 func TestAddResultsKeepsTheFirst( t *testing.T ) {

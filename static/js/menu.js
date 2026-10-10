@@ -142,6 +142,7 @@ const Menu = {
       time: Game.formatDuration( result.seconds ),
     } ) );
     Dom.show( Dom.get( "result-practice" ) , settings.practice === true );
+    Dom.show( Dom.get( "result-unlimited" ) , result.unlimited === true );
     this.open( "result-dialog" );
   },
 };

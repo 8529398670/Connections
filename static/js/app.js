@@ -177,22 +177,45 @@ const App = {
       // Game features this player can use. Switched off, the game page does
       // not draw them at all; the player sees it on their next page load.
       const features = user.features || {};
+      const saveFeature = async function ( change ) {
+        try {
+          await Api.setFeatures( user.id , change );
+          await App.refreshUsers();
+        } catch ( error ) { App.showError( error.message ); }
+      };
       const featureButton = function ( name , labelKey ) {
         const on = features[ name ] !== false;
         return Dom.el( "button" , {
           class: "small feature-toggle" + ( on ? "" : " secondary" ),
           text: I18n.format( labelKey , { state: I18n.get( on ? "admin.feature_on" : "admin.feature_off" ) } ),
           attrs: { type: "button" , "aria-pressed": on ? "true" : "false" , title: I18n.get( on ? "admin.feature_turn_off" : "admin.feature_turn_on" ) },
-          on: { click: async function () {
-            try {
-              const change = {};
-              change[ name ] = !on;
-              await Api.setFeatures( user.id , change );
-              await App.refreshUsers();
-            } catch ( error ) { App.showError( error.message ); }
+          on: { click: function () {
+            const change = {};
+            change[ name ] = !on;
+            saveFeature( change );
           } },
         } );
       };
+
+      // How far off a wrong guess may be and still get an "N missing" alert.
+      const missingLevel = Number.isInteger( features.missing_hint ) ? features.missing_hint : 1;
+      const missingSelect = Dom.el( "select" , {
+        class: "small",
+        attrs: { "aria-label": I18n.get( "admin.feature_missing" ) , title: I18n.get( "admin.feature_missing" ) },
+        children: [ 0 , 1 , 2 , 3 ].map( function ( level ) {
+          const option = Dom.el( "option" , {
+            text: level === 0 ? I18n.get( "admin.feature_missing_off" ) : I18n.format( "admin.feature_missing_level" , { count: level } ),
+            attrs: { value: String( level ) },
+          } );
+          option.selected = level === missingLevel;
+          return option;
+        } ),
+        on: { change: function ( event ) { saveFeature( { missing_hint: Number( event.target.value ) } ); } },
+      } );
+      const missingControl = Dom.el( "label" , { class: "feature-select" , children: [
+        Dom.el( "span" , { text: I18n.get( "admin.feature_missing" ) } ),
+        missingSelect,
+      ] } );
 
       // Every puzzle this player has finished while signed in -- history.html.
       const historyLink = Dom.el( "a" , {
@@ -210,6 +233,8 @@ const App = {
         Dom.el( "td" , { children: [
           Dom.el( "div" , { class: "row-actions" , children: [
             featureButton( "hints" , "admin.feature_hints" ),
+            featureButton( "unlimited_guesses" , "admin.feature_unlimited" ),
+            missingControl,
           ] } ),
         ] } ),
         Dom.el( "td" , { children: [

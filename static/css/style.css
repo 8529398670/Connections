@@ -218,6 +218,10 @@ th { color: var(--fg-muted); font-size: 0.8rem; text-transform: uppercase; lette
 td .row-actions { display: flex; gap: 0.4rem; }
 td .row-actions button, td .row-actions a { white-space: nowrap; }
 
+/* The "Missing alert" picker beside the feature toggles. */
+td .feature-select { display: inline-flex; align-items: center; gap: 0.35rem; margin: 0; font-size: 0.85rem; white-space: nowrap; }
+td .feature-select select { width: auto; min-height: 36px; padding: 0.35rem 0.5rem; font-size: 0.85rem; }
+
 @media (min-width: 40rem) {
   .app-header {
     flex-direction: row;

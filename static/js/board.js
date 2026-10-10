@@ -52,7 +52,14 @@ const Board = {
     Dom.show( this.root , tiles.length > 0 );
     this.fit();
 
+    // With Unlimited guessing there is nothing to run out of, so the row
+    // counts mistakes made instead of showing the dots left.
+    const unlimited = Boolean( options && options.unlimited );
+    Dom.text( Dom.get( "mistakes-label" ) , unlimited
+      ? I18n.format( "game.mistakes_made" , { count: game.mistakes } )
+      : I18n.get( "game.mistakes_remaining" ) );
     const dots = Dom.get( "mistake-dots" );
+    Dom.show( dots , unlimited === false );
     Dom.clear( dots );
     for ( let i = 0; i < game.MAX_MISTAKES; i += 1 ) {
       dots.appendChild( Dom.el( "span" , { class: "mistake-dot" + ( i < game.MAX_MISTAKES - game.mistakes ? "" : " used" ) } ) );

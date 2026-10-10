@@ -113,7 +113,8 @@ const Stats = {
         class: "dist-row",
         attrs: { "aria-label": I18n.format( "stats.distribution_label" , { count: count , mistakes: mistakes } ) },
         children: [
-          Dom.el( "span" , { class: "dist-label" , text: String( mistakes ) } ),
+          // The last bar also holds Unlimited-guessing wins with more.
+          Dom.el( "span" , { class: "dist-label" , text: mistakes === 4 ? I18n.get( "stats.distribution_last" ) : String( mistakes ) } ),
           Dom.el( "span" , { class: "dist-track" , children: [ bar ] } ),
         ],
       } ) );

@@ -17,6 +17,9 @@ const (
 	MaxResultsPerPost = 100
 	// Four correct groups plus four mistakes is the most a game can take.
 	MaxGuesses = 8
+	// With Unlimited guessing the only bound is that no guess repeats:
+	// C(16,4) is every distinct set of four tiles.
+	MaxUnlimitedGuesses = 1820
 )
 
 // Result records how one board ended. The server stores these and does no
@@ -37,6 +40,9 @@ type Result struct {
 	Guesses    [][]int `json:"guesses"`
 	Seconds    int     `json:"seconds"`
 	FinishedAt int64   `json:"finished_at"` // unix milliseconds
+	// Played with Unlimited guessing: mistakes never ended it, so it can
+	// only be a win, with any number of mistakes.
+	Unlimited bool `json:"unlimited,omitempty"`
 }
 
 type ResultLog struct {
@@ -56,7 +62,9 @@ func ValidResult( result *Result ) ( ok bool ) {
 	latest := time.Now().Add( 24 * time.Hour ).UnixMilli()
 	if result.FinishedAt <= 0 || result.FinishedAt > latest { return }
 
-	if len( result.Guesses ) == 0 || len( result.Guesses ) > MaxGuesses { return }
+	most := MaxGuesses
+	if result.Unlimited { most = MaxUnlimitedGuesses }
+	if len( result.Guesses ) == 0 || len( result.Guesses ) > most { return }
 	correct , wrong := 0 , 0
 	for _ , guess := range result.Guesses {
 		if len( guess ) != 4 { return }
@@ -74,9 +82,9 @@ func ValidResult( result *Result ) ( ok bool ) {
 	if result.Mistakes != wrong { return }
 	switch result.Outcome {
 	case "solved":
-		if correct != 4 || wrong > 3 { return }
+		if correct != 4 || ( wrong > 3 && result.Unlimited == false ) { return }
 	case "failed":
-		if correct > 3 || wrong != 4 { return }
+		if result.Unlimited || correct > 3 || wrong != 4 { return }
 	default:
 		return
 	}

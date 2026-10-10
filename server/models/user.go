@@ -33,15 +33,45 @@ type User struct {
 	// Game features an admin has switched off for this player. Stored as
 	// "off" so every existing record, and every new one, has them on.
 	HintsOff bool `json:"hints_off,omitempty"`
+
+	// How far off a wrong guess may be and still get an "N missing" alert:
+	// 0 never, 3 always. nil is DefaultMissingHint, so records written
+	// before this field existed keep the original "1 missing" behaviour.
+	MissingHint *int `json:"missing_hint,omitempty"`
+
+	// Whether this player may switch on Unlimited guessing in their settings.
+	// Off unless an admin turns it on.
+	UnlimitedGuesses bool `json:"unlimited_guesses,omitempty"`
+}
+
+const (
+	DefaultMissingHint = 1
+	MaxMissingHint     = 3
+)
+
+func ( user *User ) MissingHintLevel() ( level int ) {
+	level = DefaultMissingHint
+	if user.MissingHint != nil { level = *user.MissingHint }
+	return
 }
 
 // Features is the game page's view of what this player may use. A
 // switched-off feature is not greyed out there -- it is not drawn at all.
-func ( user *User ) Features() ( features map[string]bool ) {
-	features = map[string]bool{
-		"hints": user.HintsOff == false,
+func ( user *User ) Features() ( features map[string]any ) {
+	features = map[string]any{
+		"hints":             user.HintsOff == false,
+		"missing_hint":      user.MissingHintLevel(),
+		"unlimited_guesses": user.UnlimitedGuesses,
 	}
 	return
+}
+
+// FeatureChange is one admin edit to a player's features; a nil field
+// leaves that feature as it is.
+type FeatureChange struct {
+	Hints            *bool
+	MissingHint      *int
+	UnlimitedGuesses *bool
 }
 
 func ( user *User ) Disabled() ( result bool ) {
@@ -137,14 +167,18 @@ func SetUserDisabled( store *db.Store , user_id uint64 , disabled bool ) ( err e
 	return
 }
 
-// SetUserFeatures switches game features on or off for one player; a nil
-// leaves that feature as it is.
-func SetUserFeatures( store *db.Store , user_id uint64 , hints *bool ) ( err error ) {
+// SetUserFeatures applies one admin edit to a player's game features.
+func SetUserFeatures( store *db.Store , user_id uint64 , change FeatureChange ) ( err error ) {
 	err = store.UpdateValue( db.BucketUsers , encryption.Uint64ToBytes( user_id ) ,
 		func() any { return &User{} } ,
 		func( item any ) ( mutate_err error ) {
 			user := item.( *User )
-			if hints != nil { user.HintsOff = *hints == false }
+			if change.Hints != nil { user.HintsOff = *change.Hints == false }
+			if change.MissingHint != nil {
+				level := *change.MissingHint
+				user.MissingHint = &level
+			}
+			if change.UnlimitedGuesses != nil { user.UnlimitedGuesses = *change.UnlimitedGuesses }
 			return
 		} )
 	return

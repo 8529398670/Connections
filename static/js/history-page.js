@@ -57,7 +57,7 @@ const HistoryPage = {
         cell( I18n.format( "history.puzzle_label" , { id: result.puzzle_id , date: result.game_id } ) , "nowrap" ),
         cell( new Date( result.finished_at ).toLocaleString() , "nowrap" ),
         cell( I18n.get( "history.kind_" + result.kind ) ),
-        cell( I18n.get( "history.outcome_" + result.outcome ) , "outcome-" + result.outcome ),
+        cell( I18n.get( "history.outcome_" + result.outcome + ( result.unlimited ? "_unlimited" : "" ) ) , "outcome-" + result.outcome ),
         cell( String( result.mistakes ) ),
         cell( String( result.hints ) ),
         cell( minutes + ":" + String( result.seconds % 60 ).padStart( 2 , "0" ) , "nowrap" ),

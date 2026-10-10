@@ -18,6 +18,7 @@ const Game = {
   guesses: [],       // every submitted guess, four tiles each
   hinted: [],        // levels a hint has named
   mistakes: 0,
+  unlimited: false,  // mistakes never end this board (Unlimited guessing)
   status: "playing", // playing | solved | failed
   elapsed: 0,
   runningSince: null,
@@ -42,6 +43,7 @@ const Game = {
       guesses: [],
       hinted: [],
       mistakes: 0,
+      unlimited: false,
       status: "playing",
       elapsed: 0,
       started_at: now,
@@ -100,6 +102,7 @@ const Game = {
     this.guesses = saved.guesses.map( function ( guess ) { return guess.slice(); } );
     this.hinted = ( saved.hinted || [] ).slice();
     this.mistakes = saved.mistakes || 0;
+    this.unlimited = saved.unlimited === true;
     this.status = saved.status;
     this.elapsed = saved.elapsed || 0;
     this.runningSince = null;
@@ -121,6 +124,7 @@ const Game = {
       guesses: this.guesses,
       hinted: this.hinted,
       mistakes: this.mistakes,
+      unlimited: this.unlimited,
       status: this.status,
       elapsed: this.elapsedMs(),
       started_at: this.startedAt,
@@ -173,9 +177,14 @@ const Game = {
     return { changed: true };
   },
 
-  // verdict: correct | one_away | wrong | already. level: the group found,
-  // for a correct guess. finished: the outcome, when this guess ended it.
-  submit() {
+  // verdict: correct | wrong | already. level: the group found, for a
+  // correct guess. missing: for a wrong one, how many words short of a group
+  // it was (1-3). finished: the outcome, when this guess ended it.
+  //
+  // options.unlimited: Unlimited guessing is on. Once a guess is made with
+  // it on, the board stays unlimited, so switching it off later cannot turn
+  // a board already past four mistakes into a loss.
+  submit( options ) {
     if ( this.playing() === false || this.selected.length !== 4 ) return { changed: false };
     const guess = this.selected.slice();
     const key = guess.slice().sort( function ( a , b ) { return a - b; } ).join( "," );
@@ -183,6 +192,7 @@ const Game = {
       return earlier.slice().sort( function ( a , b ) { return a - b; } ).join( "," ) === key;
     } );
     if ( repeated ) return { changed: false , verdict: "already" };
+    if ( options && options.unlimited === true ) this.unlimited = true;
 
     this.guesses.push( guess );
     const counts = [ 0 , 0 , 0 , 0 ];
@@ -202,8 +212,8 @@ const Game = {
       // A wrong guess stays selected, as on the NYT board, so the player
       // can swap one word and try again.
       this.mistakes += 1;
-      outcome = { changed: true , verdict: counts.indexOf( 3 ) !== -1 ? "one_away" : "wrong" };
-      if ( this.mistakes >= this.MAX_MISTAKES ) {
+      outcome = { changed: true , verdict: "wrong" , missing: 4 - Math.max.apply( null , counts ) };
+      if ( this.unlimited === false && this.mistakes >= this.MAX_MISTAKES ) {
         // Every group not found is now shown as a bar, so no tiles remain.
         this.selected = [];
         this.order = [];
@@ -260,6 +270,7 @@ const Game = {
   // game has been pruned: every guess played again, in order.
   replay( result ) {
     const self = this;
+    this.unlimited = result.unlimited === true;
     result.guesses.forEach( function ( guess ) {
       if ( self.playing() === false ) return;
       self.selected = guess.filter( function ( tile ) { return self.order.indexOf( tile ) !== -1; } );
@@ -281,6 +292,7 @@ const Game = {
       outcome: this.status,
       mistakes: this.mistakes,
       hints: this.hinted.length,
+      unlimited: this.unlimited,
       guesses: this.guesses.map( function ( guess ) { return guess.slice(); } ),
       seconds: Math.round( this.elapsedMs() / 1000 ),
       finished_at: this.finishedAt || Date.now(),

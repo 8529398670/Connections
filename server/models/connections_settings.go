@@ -16,6 +16,7 @@ var SettingNames = []string{
 	"show_timer",
 	"sound_on_solve",
 	"dark_mode",
+	"unlimited_guessing",
 }
 
 type Settings struct {

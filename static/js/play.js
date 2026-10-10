@@ -9,10 +9,11 @@ const Play = {
   busy: false,       // a guess is animating; taps wait for it
   loading: false,    // a board is being fetched
   toastTimer: null,
-  // What this player may use, from /api/me. An admin can switch hints off
-  // per player; a switched-off feature is not drawn at all. Signed-out
-  // players have it.
-  features: { hints: true },
+  // What this player may use, from /api/me. Per player, an admin can switch
+  // hints off, set how far off a guess may be and still get an "N missing"
+  // alert (0 never), and allow Unlimited guessing. A switched-off feature is
+  // not drawn at all. Signed-out players get the defaults below.
+  features: { hints: true , missingHint: 1 , unlimited: false },
 
   async init() {
     try {
@@ -32,7 +33,14 @@ const Play = {
       // The server is unreachable: play signed out from local storage.
     }
     this.me = me;
-    if ( me.authenticated && me.features ) this.features = { hints: me.features.hints !== false };
+    if ( me.authenticated && me.features ) {
+      const level = Number.isInteger( me.features.missing_hint ) ? me.features.missing_hint : 1;
+      this.features = {
+        hints: me.features.hints !== false,
+        missingHint: Math.min( Math.max( level , 0 ) , 3 ),
+        unlimited: me.features.unlimited_guesses === true,
+      };
+    }
     await SyncStore.load( me );
     try {
       await Puzzles.load();
@@ -199,7 +207,7 @@ const Play = {
   async submit() {
     if ( this.busy || Game.playing() === false || Game.selected.length !== 4 ) return;
     const picked = Game.selected.slice();
-    const outcome = Game.submit();
+    const outcome = Game.submit( { unlimited: this.unlimitedOn() } );
     if ( outcome.changed === false ) {
       if ( outcome.verdict === "already" ) this.toast( I18n.get( "game.already_guessed" ) , 2000 );
       return;
@@ -208,7 +216,9 @@ const Play = {
     this.renderButtons();
     await Board.hop( picked );
     if ( outcome.verdict !== "correct" ) await Board.shake( picked );
-    if ( outcome.verdict === "one_away" ) this.toast( I18n.get( "game.one_away" ) , 2000 );
+    if ( outcome.verdict === "wrong" && outcome.missing <= this.features.missingHint ) {
+      this.toast( I18n.format( "game.missing" , { count: outcome.missing } ) , 2000 );
+    }
     this.busy = false;
     this.save( true );
     this.render( { fresh: outcome.level } );
@@ -316,6 +326,14 @@ const Play = {
       Dom.show( Dom.get( "help-hints" ) , false );
       Dom.show( Dom.get( "hint-line" ) , false );
     }
+    if ( this.features.missingHint === 0 ) Dom.show( Dom.get( "help-missing" ) , false );
+    if ( this.features.unlimited === false ) Settings.hide( "unlimited_guessing" );
+  },
+
+  // Whether the next guess is made with Unlimited guessing: the admin
+  // allows it and the player has switched it on.
+  unlimitedOn() {
+    return this.features.unlimited && Settings.get( "unlimited_guessing" );
   },
 
   // --- lifecycle and keys ----------------------------------------------------
@@ -369,7 +387,7 @@ const Play = {
 
   render( options ) {
     if ( Game.meta === null ) return;
-    Board.render( Game , Object.assign( { busy: this.busy } , options || {} ) );
+    Board.render( Game , Object.assign( { busy: this.busy , unlimited: Game.unlimited || this.unlimitedOn() } , options || {} ) );
     this.renderHints();
     this.renderButtons();
     this.renderStatus();
@@ -423,6 +441,7 @@ const Play = {
   },
 
   onSettingChanged() {
+    this.render();
     this.renderStatus();
   },
 

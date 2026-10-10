@@ -69,7 +69,7 @@ const Api = {
   reissueLogin( userId )       { return this.post( "/api/admin/users/" + userId + "/reissue-login" ); },
   setDisabled( userId , flag ) { return this.post( "/api/admin/users/" + userId + "/disabled" , { disabled: flag } ); },
   deleteUser( userId )         { return this.post( "/api/admin/users/" + userId + "/delete" ); },
-  // change: { hints: bool }
+  // change: any of { hints: bool , missing_hint: 0-3 , unlimited_guesses: bool }
   setFeatures( userId , change ) { return this.post( "/api/admin/users/" + userId + "/features" , change ); },
 
   // API keys. createKey's expiresInDays is passed through as-is including null,

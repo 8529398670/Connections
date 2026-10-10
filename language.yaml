@@ -68,6 +68,11 @@ admin:
   feature_off: "off"
   feature_turn_off: "Click to hide this from the player"
   feature_turn_on: "Click to give this back to the player"
+  feature_unlimited: "Unlimited guesses: {state}"
+  # The "N missing" alert after a wrong guess: off, or up to N words short.
+  feature_missing: "Missing alert"
+  feature_missing_off: "off"
+  feature_missing_level: "up to {count}"
 
 api_keys:
   heading: "API keys"
@@ -123,7 +128,11 @@ game:
   submit: "Submit"
   view_results: "View Results"
   play_again: "Play Again"
-  one_away: "One away…"
+  # After a wrong guess {count} words short of a group, if the player's
+  # alert level (set per player by an admin) reaches that far.
+  missing: "{count} missing"
+  # Replaces "Mistakes Remaining:" and the dots under Unlimited guessing.
+  mistakes_made: "Mistakes: {count}"
   already_guessed: "Already guessed!"
   loading: "Loading puzzle…"
   load_failed: "Could not load that puzzle. Please try again."
@@ -190,13 +199,17 @@ settings:
   show_timer: "Show timer"
   sound_on_solve: "Play sound on solve"
   dark_mode: "Dark mode"
+  # Shown only to players an admin has allowed it.
+  unlimited_guessing: "Unlimited guessing (play until solved)"
   close: "Done"
 
 help:
   heading: "How to Play"
   intro: "Find four groups of four words that share something in common."
   rule_select: "Pick four words and press Submit to check your guess."
-  rule_mistakes: "You can make up to four mistakes. Three right and one wrong earns a “One away…”"
+  rule_mistakes: "You can make up to four mistakes."
+  # Hidden for players whose missing alert is off.
+  missing: "A near miss tells you how many words are missing, like “1 missing”."
   examples_heading: "Category examples"
   example_1: "WET WEATHER: Hail, Rain, Sleet, Snow"
   example_2: "SKY___: Dive, Lark, Rocket, Scraper"
@@ -211,7 +224,7 @@ help:
   tip_1: "Start with words that can only mean one thing -- they narrow the field fastest."
   tip_2: "Before you submit, look for a fifth word that would also fit. That's usually a red herring."
   tip_3: "When one category has lots of candidates, solve a tighter one first and come back."
-  tip_4: "After “One away…”, think about where each of the four words could go instead."
+  tip_4: "After a near miss, think about where each of the four words could go instead."
   archive: "Tap “Connections” at the top (or the calendar) for the archive: every puzzle since June 2023. The dice deal one you haven't played yet."
   sync: "Your games are saved as you play. Sign in to pick them up on another device."
   keyboard: "On a keyboard, Enter submits and Esc deselects."
@@ -230,6 +243,8 @@ stats:
   streak_note: "A streak counts each day's puzzle solved on its own day."
   distribution: "Mistake distribution"
   distribution_label: "{count} games with {mistakes} mistakes"
+  # The last bar: four mistakes, or more with Unlimited guessing.
+  distribution_last: "4+"
   signed_out_note: "These stats live in this browser. Sign in to keep them on every device."
   close: "Close"
 
@@ -248,6 +263,7 @@ result:
   # For a player whose hints an admin has switched off.
   details_no_hints: "Mistakes: {mistakes} · Time: {time}"
   practice: "Practice round -- your first result for this puzzle stays in your stats."
+  unlimited: "Played with unlimited guesses."
   share: "Share Your Result"
   stats: "Statistics"
   random: "Random puzzle"
@@ -257,7 +273,7 @@ result:
   base_win_0: "Won with no mistakes"
   base_win_1: "Won with one mistake"
   base_win_2: "Won with two mistakes"
-  base_win_3: "Won with three mistakes"
+  base_win_3: "Won with three or more mistakes"
   base_lose_0: "Lost, no groups found"
   base_lose_1: "Lost, one group found"
   base_lose_2: "Lost, two groups found"
@@ -292,6 +308,7 @@ history:
   col_guesses: "Guesses"
   outcome_solved: "Solved"
   outcome_failed: "Missed"
+  outcome_solved_unlimited: "Solved (unlimited)"
   kind_calendar: "Calendar"
   kind_random: "Random"
   puzzle_label: "#{id} · {date}"
